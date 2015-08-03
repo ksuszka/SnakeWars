@@ -10,9 +10,26 @@ namespace SnakeWars.ContestRunner
         {
             Mapper.CreateMap<RemotePlayer, PlayerPublicInfoDTO>();
             Mapper.CreateMap<GameState, GameStateDTO>();
-            Mapper.CreateMap<Snake, SnakeDTO>();
+            Mapper.CreateMap<Snake, SnakeDTO>().ForMember(s => s.Direction, o => o.MapFrom(s => s.Status));
             Mapper.CreateMap<Point, PointDTO>();
             Mapper.CreateMap<Size, SizeDTO>();
+
+            Mapper.CreateMap<SnakeStatus, SnakeDirection>().ConvertUsing(s =>
+            {
+                switch (s)
+                {
+                    case SnakeStatus.MovingLeft:
+                        return SnakeDirection.Left;
+                    case SnakeStatus.MovingRight:
+                        return SnakeDirection.Right;
+                    case SnakeStatus.MovingDown:
+                        return SnakeDirection.Down;
+                    case SnakeStatus.MovingUp:
+                        return SnakeDirection.Up;
+                }
+                return SnakeDirection.None;
+            });
+
             Mapper.AssertConfigurationIsValid();
         }
 

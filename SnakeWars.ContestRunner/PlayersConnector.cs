@@ -65,6 +65,7 @@ namespace SnakeWars.ContestRunner
                         }
                         else
                         {
+                            writer.WriteLine(player.Id);
                             var errorDetected = new ManualResetEventSlim();
                             var statusUpdater = new Action<string>(state =>
                             {

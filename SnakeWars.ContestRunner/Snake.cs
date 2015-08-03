@@ -27,14 +27,14 @@ namespace SnakeWars.ContestRunner
         private readonly List<Point> _cells = new List<Point>();
         private int _desiredLength;
         private int _moveCount;
-        private SnakeStatus _status;
+        public SnakeStatus Status { get; private set; }
 
         public Snake(string id, int initialLength, Point initialPosition, SnakeStatus initialDirection, int maxWeight,
             Size boardSize)
         {
             Id = id;
             _desiredLength = Math.Max(1, initialLength);
-            _status = initialDirection;
+            Status = initialDirection;
             _cells.Add(initialPosition);
             _boardSize = boardSize;
             MaxWeight = maxWeight;
@@ -44,7 +44,7 @@ namespace SnakeWars.ContestRunner
         public IEnumerable<Point> Cells => _cells;
         public string Id { get; }
         public Point Head => _cells.Last();
-        public bool IsAlive => _status != SnakeStatus.Dead;
+        public bool IsAlive => Status != SnakeStatus.Dead;
         public int Score => _moveCount + _desiredLength;
         public int Weight { get; set; }
         public int MaxWeight { get; }
@@ -56,19 +56,19 @@ namespace SnakeWars.ContestRunner
             {
                 case MoveDisposition.TurnLeft:
                 {
-                    var index = Directions.IndexOf(_status);
+                    var index = Directions.IndexOf(Status);
                     if (index >= 0)
                     {
-                        _status = Directions[(index - 1 + Directions.Count)%Directions.Count];
+                        Status = Directions[(index - 1 + Directions.Count)%Directions.Count];
                     }
                 }
                     break;
                 case MoveDisposition.TurnRight:
                 {
-                    var index = Directions.IndexOf(_status);
+                    var index = Directions.IndexOf(Status);
                     if (index >= 0)
                     {
-                        _status = Directions[(index + 1 + Directions.Count)%Directions.Count];
+                        Status = Directions[(index + 1 + Directions.Count)%Directions.Count];
                     }
                 }
                     break;
@@ -77,10 +77,10 @@ namespace SnakeWars.ContestRunner
 
         public void Move()
         {
-            if (Offsets.ContainsKey(_status))
+            if (Offsets.ContainsKey(Status))
             {
                 _moveCount++;
-                var offset = Offsets[_status];
+                var offset = Offsets[Status];
                 var head = Head;
                 var newHead = new Point((head.X + offset.Item1 + _boardSize.Width)%_boardSize.Width,
                     (head.Y + offset.Item2 + _boardSize.Height)%_boardSize.Height);
@@ -101,7 +101,7 @@ namespace SnakeWars.ContestRunner
 
         public void Kill()
         {
-            _status = SnakeStatus.Dead;
+            Status = SnakeStatus.Dead;
         }
 
         public void Grow()
