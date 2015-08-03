@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {

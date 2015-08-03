@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using SnakeTest;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {
-    public class GameState : IGameState
+    public class GameState
     {
         private const int InitialLength = 5;
         public static Random rng = new Random();
@@ -19,11 +17,8 @@ namespace SnakeWars.ContestRunner
         public int Turn { get; private set; }
         public Size BoardSize { get; private set; }
         public TimeSpan TurnTime { get; set; }
-        IEnumerable<ISnake> IGameState.Snakes => Snakes;
-        IEnumerable<Point> IGameState.Walls => Walls;
-        IEnumerable<Point> IGameState.Food => Food;
 
-        public static GameState FromBoardDefinition(BoardDefinition board, IEnumerable<IPlayerPublicInfo> players)
+        public static GameState FromBoardDefinition(BoardDefinition board, IEnumerable<IPlayer> players)
         {
             Trace.Assert(board.StartingPositions.Count >= players.Count());
             var startingPositions = board.StartingPositions.ToList();

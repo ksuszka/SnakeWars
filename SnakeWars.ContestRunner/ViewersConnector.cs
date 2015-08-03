@@ -11,8 +11,8 @@ namespace SnakeWars.ContestRunner
 {
     internal class ViewersConnector
     {
-        private readonly ManualResetEventSlim _stopSignal;
         private readonly int _listenerPort;
+        private readonly ManualResetEventSlim _stopSignal;
         private readonly ViewersPool<TcpClient> _viewersPool;
 
         public ViewersConnector(ManualResetEventSlim stopSignal, int listenerPort)
@@ -73,7 +73,6 @@ namespace SnakeWars.ContestRunner
             }
             finally
             {
-
                 tcpClient.Dispose();
             }
         }

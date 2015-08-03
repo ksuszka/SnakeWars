@@ -8,6 +8,14 @@ using Point = System.Drawing.Point;
 
 namespace SnakeWars.WinFormsViewer
 {
+    internal static class PointExtensions
+    {
+        public static Point Move(this Point p, int dx, int dy)
+        {
+            return new Point(p.X + dx, p.Y + dy);
+        }
+    }
+
     internal class Visualiser
     {
         private static readonly Color[] _snakeColors =
@@ -51,9 +59,9 @@ namespace SnakeWars.WinFormsViewer
         }
 
 
-        public Bitmap CreateBoardImage(IGameState gs)
+        public Bitmap CreateBoardImage(GameStateDTO gs)
         {
-            var adjustPoint = new Func<Contracts.Point, Contracts.Point>(p => new Contracts.Point(p.X, gs.BoardSize.Height - 1 - p.Y));
+            var adjustPoint = new Func<Contracts.PointDTO, Point>(p => new Point(p.X, gs.BoardSize.Height - 1 - p.Y));
             var bitmap = new Bitmap(gs.BoardSize.Width*_cellOuterWidth + 1, gs.BoardSize.Height*_cellOuterWidth + 1);
             using (var g = Graphics.FromImage(bitmap))
             {
@@ -110,12 +118,12 @@ namespace SnakeWars.WinFormsViewer
             return bitmap;
         }
 
-        private Point PointToGridCellCenter(Contracts.Point p)
+        private Point PointToGridCellCenter(Point p)
             => new Point(p.X*_cellOuterWidth + _cellOuterWidth/2, p.Y*_cellOuterWidth + _cellOuterWidth/2);
 
-        private void DrawSnakeLine(List<Contracts.Point> cells, Graphics g, Pen pen)
+        private void DrawSnakeLine(List<Point> cells, Graphics g, Pen pen)
         {
-            Func<Contracts.Point, Point> converter = PointToGridCellCenter;
+            Func<Point, Point> converter = PointToGridCellCenter;
             if (cells.Count == 1)
             {
                 var p = converter(cells.First());
@@ -130,23 +138,23 @@ namespace SnakeWars.WinFormsViewer
                     // if cells are not neighbours then board edge was crossed
                     if (p2.X - p1.X > 1)
                     {
-                        g.DrawLine(pen, converter(p1), converter(p1.Offset(-1, 0)));
-                        g.DrawLine(pen, converter(p2), converter(p2.Offset(1, 0)));
+                        g.DrawLine(pen, converter(p1), converter(p1.Move(-1, 0)));
+                        g.DrawLine(pen, converter(p2), converter(p2.Move(1, 0)));
                     }
                     else if (p1.X - p2.X > 1)
                     {
-                        g.DrawLine(pen, converter(p1), converter(p1.Offset(1, 0)));
-                        g.DrawLine(pen, converter(p2), converter(p2.Offset(-1, 0)));
+                        g.DrawLine(pen, converter(p1), converter(p1.Move(1, 0)));
+                        g.DrawLine(pen, converter(p2), converter(p2.Move(-1, 0)));
                     }
                     else if (p2.Y - p1.Y > 1)
                     {
-                        g.DrawLine(pen, converter(p1), converter(p1.Offset(0, -1)));
-                        g.DrawLine(pen, converter(p2), converter(p2.Offset(0, 1)));
+                        g.DrawLine(pen, converter(p1), converter(p1.Move(0, -1)));
+                        g.DrawLine(pen, converter(p2), converter(p2.Move(0, 1)));
                     }
                     else if (p1.Y - p2.Y > 1)
                     {
-                        g.DrawLine(pen, converter(p1), converter(p1.Offset(0, 1)));
-                        g.DrawLine(pen, converter(p2), converter(p2.Offset(0, -1)));
+                        g.DrawLine(pen, converter(p1), converter(p1.Move(0, 1)));
+                        g.DrawLine(pen, converter(p2), converter(p2.Move(0, -1)));
                     }
                     else
                     {

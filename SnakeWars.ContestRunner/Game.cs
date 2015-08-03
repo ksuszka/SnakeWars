@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {
@@ -48,7 +47,6 @@ namespace SnakeWars.ContestRunner
             // Report state last time
             _gameStateWatcher(_gameState);
             _players.ToList().ForEach(player => player.NewTurn(_gameState));
-
         }
     }
 }

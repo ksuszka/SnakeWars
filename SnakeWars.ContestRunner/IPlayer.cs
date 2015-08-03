@@ -1,9 +1,8 @@
-﻿using SnakeWars.Contracts;
-
-namespace SnakeWars.ContestRunner
+﻿namespace SnakeWars.ContestRunner
 {
-    internal interface IPlayer : IPlayerPublicInfo
+    public interface IPlayer
     {
+        string Id { get; }
         void NewTurn(GameState gameState);
         MoveDisposition GetNextMove();
     }

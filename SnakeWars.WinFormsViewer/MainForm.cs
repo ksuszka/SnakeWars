@@ -36,7 +36,7 @@ namespace SnakeWars.WinFormsViewer
             }));
         }
 
-        private void DrawBoard(IGameState gs)
+        private void DrawBoard(GameStateDTO gs)
         {
             pbGameView.Image?.Dispose();
             if (gs == null)

@@ -1,7 +1,6 @@
 using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {
@@ -12,24 +11,23 @@ namespace SnakeWars.ContestRunner
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
+        private MoveDisposition _moveDisposition = MoveDisposition.GoStraight;
+        public string Name { get; set; }
+        public int TotalScore { get; set; }
+        public string LoginId { get; set; }
         public string Id { get; set; }
 
-        public string Name { get; set; }
-
-        public int TotalScore { get; set; }
-
-        public string LoginId { get; set; }
-
-        public event Action<string> GameStateUpdated;
         public void NewTurn(GameState gameState)
         {
             _moveDisposition = MoveDisposition.GoStraight;
-            GameStateUpdated?.Invoke(JsonConvert.SerializeObject(gameState));
+
+            GameStateUpdated?.Invoke(JsonConvert.SerializeObject(Mapping.CreateGameStateDTO(gameState),
+                jsonSerializerSettings));
         }
 
         public MoveDisposition GetNextMove() => _moveDisposition;
+        public event Action<string> GameStateUpdated;
 
-        private MoveDisposition _moveDisposition = MoveDisposition.GoStraight;
         public void SetNextMove(MoveDisposition moveDisposition)
         {
             // Called from various threads by PlayersConnector.

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {
@@ -21,26 +19,19 @@ namespace SnakeWars.ContestRunner
         private readonly List<RemotePlayer> _players;
         private int _gameNumber;
 
-        public IEnumerable<RemotePlayer> Players => _players;
-         
-        public event Action<string> StateUpdated;
-
         public Tournament()
         {
             _gameNumber = 0;
             _players = LoadPlayers();
         }
 
+        public IEnumerable<RemotePlayer> Players => _players;
         public TimeSpan GameBreakTime { get; set; } = TimeSpan.FromSeconds(2);
+        public event Action<string> StateUpdated;
 
         private void ReportGameState(GameState gameState)
         {
-            var data = new TournamentStateDTO
-            {
-                GameState = gameState,
-                GameNumber = _gameNumber,
-                Players = _players
-            };
+            var data = Mapping.CreateTournamentStateDTO(_gameNumber, gameState, _players);
             var serializedData = JsonConvert.SerializeObject(data, jsonSerializerSettings);
             StateUpdated?.Invoke(serializedData);
         }
@@ -64,7 +55,7 @@ namespace SnakeWars.ContestRunner
         {
             _players.ForEach(p =>
             {
-                var score = 0;
+                int score;
                 if (scores.TryGetValue(p.Id, out score))
                 {
                     p.TotalScore += score;

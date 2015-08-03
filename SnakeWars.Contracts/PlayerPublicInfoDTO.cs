@@ -1,6 +1,6 @@
 ﻿namespace SnakeWars.Contracts
 {
-    public class PlayerPublicInfoDTO : IPlayerPublicInfo
+    public class PlayerPublicInfoDTO
     {
         public string Id { get; set; }
         public string Name { get; set; }

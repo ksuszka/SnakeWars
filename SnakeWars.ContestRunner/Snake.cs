@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SnakeWars.Contracts;
 
 namespace SnakeWars.ContestRunner
 {
-    public class Snake : ISnake
+    public class Snake
     {
         public static readonly IList<SnakeStatus> Directions = new[]
         {
@@ -15,7 +14,7 @@ namespace SnakeWars.ContestRunner
             SnakeStatus.MovingLeft
         }.ToList();
 
-        private static readonly IDictionary<SnakeStatus, Tuple<int, int>> offsets = new Dictionary
+        private static readonly IDictionary<SnakeStatus, Tuple<int, int>> Offsets = new Dictionary
             <SnakeStatus, Tuple<int, int>>
         {
             {SnakeStatus.MovingUp, Tuple.Create(0, 1)},
@@ -48,7 +47,7 @@ namespace SnakeWars.ContestRunner
         public bool IsAlive => _status != SnakeStatus.Dead;
         public int Score => _moveCount + _desiredLength;
         public int Weight { get; set; }
-        public int MaxWeight { get; private set; }
+        public int MaxWeight { get; }
         private void ResetWeight() => Weight = MaxWeight;
 
         public void UpdateDirection(MoveDisposition move)
@@ -73,17 +72,15 @@ namespace SnakeWars.ContestRunner
                     }
                 }
                     break;
-                default:
-                    break;
             }
         }
 
         public void Move()
         {
-            if (offsets.ContainsKey(_status))
+            if (Offsets.ContainsKey(_status))
             {
                 _moveCount++;
-                var offset = offsets[_status];
+                var offset = Offsets[_status];
                 var head = Head;
                 var newHead = new Point((head.X + offset.Item1 + _boardSize.Width)%_boardSize.Width,
                     (head.Y + offset.Item2 + _boardSize.Height)%_boardSize.Height);

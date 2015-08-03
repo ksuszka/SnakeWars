@@ -1,10 +1,7 @@
-using Newtonsoft.Json;
-
-namespace SnakeWars.Contracts
+namespace SnakeWars.ContestRunner
 {
     public struct Point
     {
-        [JsonConstructor]
         public Point(int x, int y)
         {
             X = x;

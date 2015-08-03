@@ -4,17 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SnakeWars.ContestRunner
 {
-    class PlayersConnector
+    internal class PlayersConnector
     {
-        private readonly ManualResetEventSlim _stopSignal;
         private readonly int _listenerPort;
         private readonly IDictionary<string, RemotePlayer> _players;
+        private readonly ManualResetEventSlim _stopSignal;
 
         public PlayersConnector(ManualResetEventSlim stopSignal, int listenerPort, IEnumerable<RemotePlayer> players)
         {
@@ -33,7 +32,7 @@ namespace SnakeWars.ContestRunner
                 while (!_stopSignal.IsSet)
                 {
                     var acceptTask = listener.AcceptTcpClientAsync();
-                    WaitHandle.WaitAny(new[] { _stopSignal.WaitHandle, ((IAsyncResult)acceptTask).AsyncWaitHandle });
+                    WaitHandle.WaitAny(new[] {_stopSignal.WaitHandle, ((IAsyncResult) acceptTask).AsyncWaitHandle});
                     if (acceptTask.IsCompleted)
                     {
                         var tcpClient = acceptTask.Result;

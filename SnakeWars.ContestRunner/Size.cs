@@ -1,4 +1,4 @@
-namespace SnakeWars.Contracts
+namespace SnakeWars.ContestRunner
 {
     public struct Size
     {
@@ -8,8 +8,8 @@ namespace SnakeWars.Contracts
             Height = height;
         }
 
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public int Width { get; }
+        public int Height { get; }
         public override string ToString() => $"({Width},{Height})";
     }
 }
