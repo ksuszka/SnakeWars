@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SnakeWars.WinFormsViewer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ContestServerHost" Type="System.String" Scope="User">
+      <Value Profile="(Default)">localhost</Value>
+    </Setting>
+    <Setting Name="ContestServerPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">9933</Value>
+    </Setting>
+    <Setting Name="InfoFont" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Lucida Console, 14pt</Value>
+    </Setting>
+    <Setting Name="VisualisationCellSize" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">29</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

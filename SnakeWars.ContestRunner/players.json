@@ -1,0 +1,14 @@
+﻿[
+  {
+    "name": "Player 1",
+    "loginId": "PL1"
+  },
+  {
+    "name": "Player 2",
+    "loginId": "PL2"
+  },
+  {
+    "name": "Player 3",
+    "loginId": "PL3"
+  }
+]

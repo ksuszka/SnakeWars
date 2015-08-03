@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnakeWars.ContestRunner", "SnakeWars.ContestRunner\SnakeWars.ContestRunner.csproj", "{BA15C750-580E-421F-9B88-805ED5C82773}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnakeWars.WinFormsViewer", "SnakeWars.WinFormsViewer\SnakeWars.WinFormsViewer.csproj", "{4E7CCBDB-B977-4947-B906-934C78511271}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnakeWars.Contracts", "SnakeWars.Contracts\SnakeWars.Contracts.csproj", "{9CC075D6-F034-451D-9B38-04E0CB53731C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA15C750-580E-421F-9B88-805ED5C82773}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA15C750-580E-421F-9B88-805ED5C82773}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA15C750-580E-421F-9B88-805ED5C82773}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA15C750-580E-421F-9B88-805ED5C82773}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E7CCBDB-B977-4947-B906-934C78511271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E7CCBDB-B977-4947-B906-934C78511271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E7CCBDB-B977-4947-B906-934C78511271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E7CCBDB-B977-4947-B906-934C78511271}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC075D6-F034-451D-9B38-04E0CB53731C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC075D6-F034-451D-9B38-04E0CB53731C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC075D6-F034-451D-9B38-04E0CB53731C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC075D6-F034-451D-9B38-04E0CB53731C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
