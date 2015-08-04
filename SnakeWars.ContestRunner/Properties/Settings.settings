@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SnakeWars.ContestRunner.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ViewersConnectorPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">9933</Value>
+    </Setting>
+    <Setting Name="PlayersConnectorPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">9977</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -75,7 +75,7 @@ namespace SnakeWars.ContestRunner
             var playersFileName = File.Exists(PlayersTournamentFileName)
                 ? PlayersTournamentFileName
                 : PlayersDefaultFileName;
-            Console.WriteLine($"Loading players list from ${playersFileName}...");
+            Console.WriteLine($"Loading players list from {playersFileName}...");
             var players = JsonConvert.DeserializeObject<List<RemotePlayer>>(File.ReadAllText(playersFileName));
             var index = 0;
             var idGenerator = new Func<int, string>(i =>

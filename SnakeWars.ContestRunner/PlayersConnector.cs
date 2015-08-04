@@ -24,10 +24,11 @@ namespace SnakeWars.ContestRunner
 
         public Task Start()
         {
+            Console.WriteLine($"Starting player connector on port {_listenerPort}.");
+            var listener = new TcpListener(IPAddress.Any, _listenerPort);
+            listener.Start();
             return Task.Factory.StartNew(() =>
             {
-                var listener = new TcpListener(IPAddress.Any, _listenerPort);
-                listener.Start();
                 var clients = new List<Task>();
                 while (!_stopSignal.IsSet)
                 {
