@@ -85,7 +85,10 @@ namespace SnakeWars.ContestRunner
             if (Turn%FoodSpawnRate == 0 && Food.Count < MaxFoodCount)
             {
                 var emptyCells = FreeCells.Except(obstacles.Select(k => k.Key).Concat(Food)).ToList();
-                Food.Add(emptyCells[rng.Next(0, emptyCells.Count)]);
+                if (emptyCells.Any())
+                {
+                    Food.Add(emptyCells[rng.Next(0, emptyCells.Count)]);
+                }
             }
         }
 
