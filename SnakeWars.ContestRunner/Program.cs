@@ -91,7 +91,7 @@ namespace SnakeWars.ContestRunner
 
         private class Options
         {
-            [Option('g', "generator", DefaultValue = "complex", HelpText = "Board generator for tournament.")]
+            [Option('g', "generator", DefaultValue = "empty", HelpText = "Board generator for tournament.")]
             public string Generator { get; set; }
 
             [Option('t', "turn", DefaultValue = 200, HelpText = "Turn time in milliseconds.")]
