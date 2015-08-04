@@ -90,7 +90,7 @@ namespace SnakeWars.ContestRunner
                         var walls = new List<Point>();
                         var startingPositions = new List<Point>();
                         // Board map
-                        for (var y = 0; y < height; y++)
+                        for (var y = height - 1; y >= 0; y--)
                         {
                             lineIndex++;
                             line = reader.ReadLine().Trim();
