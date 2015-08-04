@@ -8,5 +8,8 @@
     <Setting Name="PlayersConnectorPort" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">9977</Value>
     </Setting>
+    <Setting Name="GameBreakTimeMilliseconds" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

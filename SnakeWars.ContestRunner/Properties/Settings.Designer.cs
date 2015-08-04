@@ -46,5 +46,17 @@ namespace SnakeWars.ContestRunner.Properties {
                 this["PlayersConnectorPort"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int GameBreakTimeMilliseconds {
+            get {
+                return ((int)(this["GameBreakTimeMilliseconds"]));
+            }
+            set {
+                this["GameBreakTimeMilliseconds"] = value;
+            }
+        }
     }
 }

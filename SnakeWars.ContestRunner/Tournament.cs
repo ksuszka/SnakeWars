@@ -10,6 +10,8 @@ namespace SnakeWars.ContestRunner
 {
     internal class Tournament
     {
+        private readonly Func<BoardDefinition> _boardGenerator;
+
         private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -20,14 +22,15 @@ namespace SnakeWars.ContestRunner
         private readonly List<RemotePlayer> _players;
         private int _gameNumber;
 
-        public Tournament()
+        public Tournament(Func<BoardDefinition> boardGenerator)
         {
+            _boardGenerator = boardGenerator;
             _gameNumber = 0;
             _players = LoadPlayers();
         }
 
         public IEnumerable<RemotePlayer> Players => _players;
-        public TimeSpan GameBreakTime { get; set; } = TimeSpan.FromSeconds(2);
+        public TimeSpan GameBreakTime { get; set; } = TimeSpan.FromSeconds(1);
         public event Action<string> StateUpdated;
 
         private void ReportGameState(GameState gameState)
@@ -44,7 +47,7 @@ namespace SnakeWars.ContestRunner
             {
                 _gameNumber++;
                 Console.WriteLine($"Game {_gameNumber}");
-                var game = new Game(BoardFactory.EmptyBoard(30, 20), _players, ReportGameState);
+                var game = new Game(_boardGenerator(), _players, ReportGameState);
                 game.Run();
                 UpdatePlayersScores(game.Scores);
                 Thread.Sleep(GameBreakTime);
