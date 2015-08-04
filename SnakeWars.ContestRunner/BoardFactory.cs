@@ -22,7 +22,7 @@ namespace SnakeWars.ContestRunner
                     startingPositions.Add(new Point(x, y));
                 }
             }
-            return new BoardDefinition(width, height, new List<Point>(), startingPositions, turnTime, 100);
+            return new BoardDefinition(width, height, new List<Point>(), startingPositions, turnTime, 5, 100, 20, 5);
         }
 
         public static BoardDefinition BoardWithOuterWalls(int width, int height)
@@ -45,7 +45,7 @@ namespace SnakeWars.ContestRunner
                     startingPositions.Add(new Point(x, y));
                 }
             }
-            return new BoardDefinition(width, height, walls, startingPositions, turnTime, 100);
+            return new BoardDefinition(width, height, walls, startingPositions, turnTime, 5, 100, 20, 5);
         }
     }
 }
