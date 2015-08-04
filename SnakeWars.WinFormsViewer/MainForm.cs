@@ -84,5 +84,24 @@ namespace SnakeWars.WinFormsViewer
             }
             return info.ToString();
         }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F11)
+            {
+                if (WindowState == FormWindowState.Maximized && FormBorderStyle == FormBorderStyle.None)
+                {
+                    FormBorderStyle = FormBorderStyle.Sizable;
+                    WindowState = FormWindowState.Normal;
+                }
+                else
+                {
+                    WindowState = FormWindowState.Normal;
+                    FormBorderStyle = FormBorderStyle.None;
+                    WindowState = FormWindowState.Maximized;
+                }
+                e.Handled = true;
+            }
+        }
     }
 }
