@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -53,14 +54,15 @@ namespace SnakeWars.ContestRunner
 
         private void UpdatePlayersScores(IDictionary<string, int> scores)
         {
-            _players.ForEach(p =>
+            var playerMap = _players.ToDictionary(p => p.Id);
+            // Assign tournament points based on order of scored points
+            var sortedScores = scores.ToList().GroupBy(k => k.Value, k => k.Key).OrderByDescending(g => g.Key);
+            var points = scores.Count();
+            foreach (var score in sortedScores)
             {
-                int score;
-                if (scores.TryGetValue(p.Id, out score))
-                {
-                    p.TotalScore += score;
-                }
-            });
+                score.ToList().ForEach(playerId => playerMap[playerId].TotalScore += points);
+                points -= score.Count();
+            }
             SavePlayers(_players);
         }
 

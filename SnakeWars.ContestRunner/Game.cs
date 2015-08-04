@@ -26,9 +26,20 @@ namespace SnakeWars.ContestRunner
 
         public IDictionary<string, int> Scores => _gameState.Snakes.ToDictionary(s => s.Id, s => s.Score);
 
+//        private Func<bool> _shouldGameContinue => () => _gameState.IsAnySnakeAlive;
+        private Func<bool> _shouldGameContinue => () =>
+        {
+            // End game when there is only one snake left and it has most points.
+            var aliveSnakes = _gameState.Snakes.Where(s => s.IsAlive);
+            if (aliveSnakes.Count() < 1) return false;
+            if (aliveSnakes.Count() > 1) return true;
+            var lastSnake = aliveSnakes.First();
+            return _gameState.Snakes.Count(s => s.Score >= lastSnake.Score) > 1;
+        };
+
         public void Run()
         {
-            while (_gameState.IsAnySnakeAlive)
+            while (_shouldGameContinue())
             {
                 Console.WriteLine($"Turn {_gameState.Turn}");
 
