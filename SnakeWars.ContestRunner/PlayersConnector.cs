@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,41 +14,42 @@ namespace SnakeWars.ContestRunner
     {
         private readonly int _listenerPort;
         private readonly IDictionary<string, RemotePlayer> _players;
-        private readonly ManualResetEventSlim _stopSignal;
 
-        public PlayersConnector(ManualResetEventSlim stopSignal, int listenerPort, IEnumerable<RemotePlayer> players)
+        public PlayersConnector(int listenerPort, IEnumerable<RemotePlayer> players)
         {
-            _stopSignal = stopSignal;
             _listenerPort = listenerPort;
             _players = players.ToDictionary(p => p.LoginId);
         }
 
-        public Task Start()
+        public Task Start(CancellationToken cancellationToken)
         {
             Console.WriteLine($"Starting player connector on port {_listenerPort}.");
             var listener = new TcpListener(IPAddress.Any, _listenerPort);
             listener.Start();
-            return Task.Factory.StartNew(() =>
+
+            return Task.Run(async () =>
             {
                 var clients = new List<Task>();
-                while (!_stopSignal.IsSet)
+                try
                 {
-                    var acceptTask = listener.AcceptTcpClientAsync();
-                    WaitHandle.WaitAny(new[] {_stopSignal.WaitHandle, ((IAsyncResult) acceptTask).AsyncWaitHandle});
-                    if (acceptTask.IsCompleted)
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        var tcpClient = acceptTask.Result;
+                        var tcpClient =
+                            await listener.AcceptTcpClientAsync().ContinueWith(t => t.Result, cancellationToken);
                         clients = clients.Where(task => !task.IsCompleted).ToList();
-                        clients.Add(Task.Factory.StartNew(() => HandleSinglePlayer(tcpClient)));
+                        clients.Add(HandleSinglePlayer(tcpClient, cancellationToken));
                     }
                 }
-                // FIX IT: do not wait for clients, as they are written in synchronous way and can block
-                //Task.WaitAll(clients.ToArray());
-            });
+                finally
+                {
+                    await Task.WhenAll(clients.ToArray());
+                }
+            }, cancellationToken);
         }
 
-        private void HandleSinglePlayer(TcpClient tcpClient)
+        private async Task HandleSinglePlayer(TcpClient tcpClient, CancellationToken listenerCancellationToken)
         {
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(listenerCancellationToken);
             var remoteEndpoint = "Unknown";
             try
             {
@@ -59,71 +61,25 @@ namespace SnakeWars.ContestRunner
                     writer.AutoFlush = true;
                     using (var reader = new StreamReader(tcpClient.GetStream()))
                     {
-                        writer.WriteLine("ID");
-                        var loginId = reader.ReadLine();
+                        await writer.WriteLineAsync("ID", cts.Token);
+                        var loginId = await reader.ReadLineAsync(cts.Token);
                         RemotePlayer player;
                         if (!_players.TryGetValue(loginId.Trim(), out player))
                         {
-                            writer.WriteLine("Invalid login id!");
+                            await writer.WriteLineAsync("Invalid login id!", cts.Token);
                         }
                         else
                         {
-                            writer.WriteLine(player.Id);
-                            var errorDetected = new ManualResetEventSlim();
-                            var statusUpdater = new Action<string>(state =>
+                            await writer.WriteLineAsync(player.Id, cts.Token);
+                            var tasks = new[]
                             {
-                                try
-                                {
-                                    writer.WriteLine(state);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine(
-                                        $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
-                                    errorDetected.Set();
-                                }
-                            });
-                            try
-                            {
-                                player.GameStateUpdated += statusUpdater;
-
-                                while (true)
-                                {
-                                    var readLineTask = reader.ReadLineAsync();
-                                    WaitHandle.WaitAny(new[]
-                                    {
-                                        _stopSignal.WaitHandle, errorDetected.WaitHandle,
-                                        ((IAsyncResult) readLineTask).AsyncWaitHandle
-                                    });
-                                    if (readLineTask.IsCompleted)
-                                    {
-                                        var line = readLineTask.Result.Trim().ToUpper();
-                                        switch (line)
-                                        {
-                                            case "LEFT":
-                                                player.SetNextMove(MoveDisposition.TurnLeft);
-                                                break;
-                                            case "RIGHT":
-                                                player.SetNextMove(MoveDisposition.TurnRight);
-                                                break;
-                                            case "STRAIGHT":
-                                                player.SetNextMove(MoveDisposition.GoStraight);
-                                                break;
-                                            default:
-                                                // ignore everything else
-                                                break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            finally
-                            {
-                                player.GameStateUpdated -= statusUpdater;
-                            }
+                                HandleIncomingData(player, reader, cts.Token),
+                                HandleOutgoingData(player, writer, cts.Token)
+                            };
+                            await Task.WhenAny(tasks);
+                            // If reading or writing fails abort second process
+                            cts.Cancel();
+                            await Task.WhenAll(tasks);
                         }
                     }
                 }
@@ -136,6 +92,60 @@ namespace SnakeWars.ContestRunner
             finally
             {
                 tcpClient.Dispose();
+            }
+        }
+
+        private async Task HandleIncomingData(RemotePlayer player, StreamReader reader,
+            CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var line = (await reader.ReadLineAsync(cancellationToken))?.Trim().ToUpper();
+                switch (line)
+                {
+                    case "LEFT":
+                        player.SetNextMove(MoveDisposition.TurnLeft);
+                        break;
+                    case "RIGHT":
+                        player.SetNextMove(MoveDisposition.TurnRight);
+                        break;
+                    case "STRAIGHT":
+                        player.SetNextMove(MoveDisposition.GoStraight);
+                        break;
+                    default:
+                        // ignore everything else
+                        break;
+                }
+            }
+        }
+
+        private async Task HandleOutgoingData(RemotePlayer player, StreamWriter writer,
+            CancellationToken cancellationToken)
+        {
+            var dataToSend = new ConcurrentQueue<string>();
+            var newData = new AutoResetEvent(false);
+            var statusUpdater = new Action<string>(state =>
+            {
+                dataToSend.Enqueue(state);
+                newData.Set();
+            });
+            try
+            {
+                player.GameStateUpdated += statusUpdater;
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    string data;
+                    while (dataToSend.TryDequeue(out data))
+                    {
+                        await writer.WriteLineAsync(data, cancellationToken);
+                    }
+                    WaitHandle.WaitAny(new[] {newData, cancellationToken.WaitHandle});
+                }
+            }
+            finally
+            {
+                player.GameStateUpdated -= statusUpdater;
             }
         }
     }

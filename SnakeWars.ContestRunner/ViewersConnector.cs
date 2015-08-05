@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,40 +13,39 @@ namespace SnakeWars.ContestRunner
     internal class ViewersConnector
     {
         private readonly int _listenerPort;
-        private readonly ManualResetEventSlim _stopSignal;
-        private readonly ViewersPool<TcpClient> _viewersPool;
 
-        public ViewersConnector(ManualResetEventSlim stopSignal, int listenerPort)
+        public ViewersConnector(int listenerPort)
         {
-            _stopSignal = stopSignal;
             _listenerPort = listenerPort;
-            _viewersPool = new ViewersPool<TcpClient>();
         }
 
-        public Task Start()
+        public Task Start(CancellationToken cancellationToken)
         {
             Console.WriteLine($"Starting viewer connector on port {_listenerPort}.");
             var listener = new TcpListener(IPAddress.Any, _listenerPort);
             listener.Start();
-            return Task.Factory.StartNew(() =>
+
+            return Task.Run(async () =>
             {
                 var clients = new List<Task>();
-                while (!_stopSignal.IsSet)
+                try
                 {
-                    var acceptTask = listener.AcceptTcpClientAsync();
-                    WaitHandle.WaitAny(new[] {_stopSignal.WaitHandle, ((IAsyncResult) acceptTask).AsyncWaitHandle});
-                    if (acceptTask.IsCompleted)
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        var tcpClient = acceptTask.Result;
+                        var tcpClient =
+                            await listener.AcceptTcpClientAsync().ContinueWith(t => t.Result, cancellationToken);
                         clients = clients.Where(task => !task.IsCompleted).ToList();
-                        clients.Add(Task.Factory.StartNew(() => HandleSingleViewer(tcpClient)));
+                        clients.Add(HandleSinglePlayer(tcpClient, cancellationToken));
                     }
                 }
-                Task.WaitAll(clients.ToArray());
-            });
+                finally
+                {
+                    await Task.WhenAll(clients.ToArray());
+                }
+            }, cancellationToken);
         }
 
-        private void HandleSingleViewer(TcpClient tcpClient)
+        private async Task HandleSinglePlayer(TcpClient tcpClient, CancellationToken cancellationToken)
         {
             var remoteEndpoint = "Unknown";
             try
@@ -53,25 +53,10 @@ namespace SnakeWars.ContestRunner
                 remoteEndpoint = tcpClient.Client.RemoteEndPoint.ToString();
                 Console.WriteLine($"New viewer connected: {remoteEndpoint}");
                 tcpClient.NoDelay = true;
-                using (var stream = new StreamWriter(tcpClient.GetStream()))
+                using (var writer = new StreamWriter(tcpClient.GetStream()))
                 {
-                    stream.AutoFlush = true;
-                    var errorDetected = new ManualResetEventSlim();
-                    _viewersPool.Add(tcpClient, line =>
-                    {
-                        try
-                        {
-                            stream.WriteLine(line);
-                        }
-                        catch (Exception ex)
-                        {
-                            _viewersPool.Remove(tcpClient);
-                            Console.WriteLine(
-                                $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
-                            errorDetected.Set();
-                        }
-                    });
-                    WaitHandle.WaitAny(new[] {_stopSignal.WaitHandle, errorDetected.WaitHandle});
+                    writer.AutoFlush = true;
+                    await HandleOutgoingData(writer, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -85,9 +70,38 @@ namespace SnakeWars.ContestRunner
             }
         }
 
-        public void UpdateState(string state)
+        private async Task HandleOutgoingData(StreamWriter writer,
+            CancellationToken cancellationToken)
         {
-            _viewersPool.CurrentViewers.ToList().ForEach(v => v(state));
+            var dataToSend = new ConcurrentQueue<string>();
+            var newData = new AutoResetEvent(false);
+            var statusUpdater = new Action<string>(state =>
+            {
+                dataToSend.Enqueue(state);
+                newData.Set();
+            });
+            try
+            {
+                StateUpdated += statusUpdater;
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    string data;
+                    while (dataToSend.TryDequeue(out data))
+                    {
+                        await writer.WriteLineAsync(data, cancellationToken);
+                    }
+                    WaitHandle.WaitAny(new[] {newData, cancellationToken.WaitHandle});
+                }
+            }
+            finally
+            {
+                StateUpdated -= statusUpdater;
+            }
         }
+
+        public event Action<string> StateUpdated;
+        public void UpdateState(string state) => StateUpdated?.Invoke(state);
     }
 }
+

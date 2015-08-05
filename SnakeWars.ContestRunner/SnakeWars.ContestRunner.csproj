@@ -61,10 +61,10 @@
   <ItemGroup>
     <Compile Include="BoardDefinition.cs" />
     <Compile Include="BoardFactory.cs" />
-    <Compile Include="ExceptionExtensions.cs" />
+    <Compile Include="Utilities\ExceptionExtensions.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameState.cs" />
-    <Compile Include="CollectionExtensions.cs" />
+    <Compile Include="Utilities\CollectionExtensions.cs" />
     <Compile Include="IPlayer.cs" />
     <Compile Include="Mapping.cs" />
     <Compile Include="MoveDisposition.cs" />
@@ -81,7 +81,9 @@
     <Compile Include="Size.cs" />
     <Compile Include="Snake.cs" />
     <Compile Include="SnakeStatus.cs" />
+    <Compile Include="Utilities\StreamExtensions.cs" />
     <Compile Include="Tournament.cs" />
+    <Compile Include="Utilities\TaskExtensions.cs" />
     <Compile Include="ViewersConnector.cs" />
     <Compile Include="ViewersPool.cs" />
   </ItemGroup>

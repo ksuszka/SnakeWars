@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -64,29 +65,41 @@ namespace SnakeWars.ContestRunner
 
         private static void RunTournament(Func<BoardDefinition> boardGenerator)
         {
-            var tournament = new Tournament(boardGenerator)
+            try
             {
-                GameBreakTime = TimeSpan.FromMilliseconds(Settings.Default.GameBreakTimeMilliseconds)
-            };
+                var tournament = new Tournament(boardGenerator)
+                {
+                    GameBreakTime = TimeSpan.FromMilliseconds(Settings.Default.GameBreakTimeMilliseconds)
+                };
 
-            var stopConnectorsSignal = new ManualResetEventSlim();
-            var viewersConnector = new ViewersConnector(stopConnectorsSignal, Settings.Default.ViewersConnectorPort);
-            tournament.StateUpdated += state => viewersConnector.UpdateState(state);
-            var viewersConnectorTask = viewersConnector.Start();
+                var connectorCts = new CancellationTokenSource();
 
-            var playersConnector = new PlayersConnector(stopConnectorsSignal, Settings.Default.PlayersConnectorPort,
-                tournament.Players);
-            var playersConnectorTask = playersConnector.Start();
+                var viewersConnector = new ViewersConnector(Settings.Default.ViewersConnectorPort);
+                tournament.StateUpdated += state => viewersConnector.UpdateState(state);
+                var viewersConnectorTask = viewersConnector.Start(connectorCts.Token);
 
-            var stopTournamentSignal = new ManualResetEventSlim();
-            var gameRunnerTask = Task.Factory.StartNew(() => { tournament.Run(() => stopTournamentSignal.IsSet); });
-            Console.WriteLine("Press any key to stop tournament...");
-            Task.WaitAny(gameRunnerTask, viewersConnectorTask, playersConnectorTask,
-                Task.Factory.StartNew(() => Console.ReadKey()));
-            stopTournamentSignal.Set();
-            Task.WaitAll(gameRunnerTask);
-            stopConnectorsSignal.Set();
-            Task.WaitAll(viewersConnectorTask, playersConnectorTask);
+                var playersConnector = new PlayersConnector(Settings.Default.PlayersConnectorPort, tournament.Players);
+                var playersConnectorTask = playersConnector.Start(connectorCts.Token);
+
+                var stopTournamentSignal = new ManualResetEventSlim();
+                var gameRunnerTask = Task.Factory.StartNew(() => { tournament.Run(() => stopTournamentSignal.IsSet); });
+
+                Console.WriteLine("Press any key to stop tournament...");
+                Task.WaitAny(gameRunnerTask, playersConnectorTask, viewersConnectorTask,
+                    Task.Factory.StartNew(() => Console.ReadKey()));
+
+                stopTournamentSignal.Set();
+                Task.WaitAll(gameRunnerTask);
+                connectorCts.Cancel();
+                Task.WaitAll(playersConnectorTask, viewersConnectorTask);
+            }
+            catch (Exception ex)
+                when (
+                    (ex is TaskCanceledException) ||
+                    (((ex as AggregateException)?.InnerExceptions.All(ie => (ie is TaskCanceledException))) ?? false))
+            {
+                // Ignore task cancellation exceptions
+            }
         }
 
         private class Options
