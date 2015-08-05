@@ -69,17 +69,26 @@ namespace SnakeWars.WinFormsViewer
                 var maxPlayerNameLength = Math.Max(7, state?.Players.Max(p => p.Name.Length) ?? 0);
                 var maxIdLength = Math.Max(2, state.GameState.Snakes.Max(p => p.Id.Length));
                 info.AppendLine(
-                    $"{"ID".PadRight(maxIdLength)} {"Name".PadRight(maxPlayerNameLength)}Status Length Weight Score");
-                var playerMap = state.Players.ToDictionary(k => k.Id, v => v.Name);
+                    $"{"ID".PadRight(maxIdLength)} {"Name".PadRight(maxPlayerNameLength)}Status Length Weight Score  Time");
+                var playerMap = state.Players.ToDictionary(k => k.Id);
                 var snakes = state.GameState.Snakes.ToList();
                 for (var i = 0; i < snakes.Count; i++)
                 {
                     var snake = snakes[i];
                     var playerName = "Unknown";
-                    playerMap.TryGetValue(snake.Id, out playerName);
+                    var moveTime = "-";
+                    PlayerPublicInfoDTO player;
+                    if (playerMap.TryGetValue(snake.Id, out player))
+                    {
+                        playerName = player.Name;
+                        if (player.LastMoveTimeMilliseconds.HasValue)
+                        {
+                            moveTime = $"{player.LastMoveTimeMilliseconds.Value}ms";
+                        }
+                    }
 
                     info.AppendLine(
-                        $"{snake.Id.Trim().PadRight(maxIdLength)} {playerName.Trim().PadRight(maxPlayerNameLength)}{(snake.IsAlive ? "ALIVE" : " DEAD"),6}{snake.Cells.Count(),7}{snake.Weight,7}{snake.Score,6}");
+                        $"{snake.Id.Trim().PadRight(maxIdLength)} {playerName.Trim().PadRight(maxPlayerNameLength)}{(snake.IsAlive ? "ALIVE" : " DEAD"),6}{snake.Cells.Count(),7}{snake.Weight,7}{snake.Score,6}{moveTime,6}");
                 }
             }
             return info.ToString();

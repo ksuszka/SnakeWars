@@ -106,6 +106,9 @@ namespace SnakeWars.ContestRunner
                                             case "RIGHT":
                                                 player.SetNextMove(MoveDisposition.TurnRight);
                                                 break;
+                                            case "STRAIGHT":
+                                                player.SetNextMove(MoveDisposition.GoStraight);
+                                                break;
                                             default:
                                                 // ignore everything else
                                                 break;
