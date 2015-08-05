@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="BoardDefinition.cs" />
     <Compile Include="BoardFactory.cs" />
+    <Compile Include="ExceptionExtensions.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="CollectionExtensions.cs" />

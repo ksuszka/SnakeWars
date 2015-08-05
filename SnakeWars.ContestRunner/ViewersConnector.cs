@@ -47,9 +47,11 @@ namespace SnakeWars.ContestRunner
 
         private void HandleSingleViewer(TcpClient tcpClient)
         {
+            var remoteEndpoint = "Unknown";
             try
             {
-                Console.WriteLine($"New viewer connected: {tcpClient.Client.RemoteEndPoint}");
+                remoteEndpoint = tcpClient.Client.RemoteEndPoint.ToString();
+                Console.WriteLine($"New viewer connected: {remoteEndpoint}");
                 tcpClient.NoDelay = true;
                 using (var stream = new StreamWriter(tcpClient.GetStream()))
                 {
@@ -65,12 +67,17 @@ namespace SnakeWars.ContestRunner
                         {
                             _viewersPool.Remove(tcpClient);
                             Console.WriteLine(
-                                $"Client {tcpClient.Client.RemoteEndPoint} disconnected with error: {ex.Message}.");
+                                $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
                             errorDetected.Set();
                         }
                     });
                     WaitHandle.WaitAny(new[] {_stopSignal.WaitHandle, errorDetected.WaitHandle});
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
             }
             finally
             {

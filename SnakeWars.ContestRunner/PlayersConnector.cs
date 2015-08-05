@@ -48,9 +48,11 @@ namespace SnakeWars.ContestRunner
 
         private void HandleSinglePlayer(TcpClient tcpClient)
         {
+            var remoteEndpoint = "Unknown";
             try
             {
-                Console.WriteLine($"New player connected: {tcpClient.Client.RemoteEndPoint}");
+                remoteEndpoint = tcpClient.Client.RemoteEndPoint.ToString();
+                Console.WriteLine($"New player connected: {remoteEndpoint}");
                 tcpClient.NoDelay = true;
                 using (var writer = new StreamWriter(tcpClient.GetStream()))
                 {
@@ -77,7 +79,7 @@ namespace SnakeWars.ContestRunner
                                 catch (Exception ex)
                                 {
                                     Console.WriteLine(
-                                        $"Client {tcpClient.Client.RemoteEndPoint} disconnected with error: {ex.Message}.");
+                                        $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
                                     errorDetected.Set();
                                 }
                             });
@@ -115,11 +117,6 @@ namespace SnakeWars.ContestRunner
                                     }
                                 }
                             }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(
-                                    $"Client {tcpClient.Client.RemoteEndPoint} disconnected with error: {ex.Message}.");
-                            }
                             finally
                             {
                                 player.GameStateUpdated -= statusUpdater;
@@ -127,6 +124,11 @@ namespace SnakeWars.ContestRunner
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Connection to {remoteEndpoint} aborted due to error: {ex.GetFlatMessage()}.");
             }
             finally
             {
