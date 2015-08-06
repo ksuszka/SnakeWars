@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace SnakeWars.ContestRunner
 {
@@ -122,25 +122,16 @@ namespace SnakeWars.ContestRunner
         private async Task HandleOutgoingData(RemotePlayer player, StreamWriter writer,
             CancellationToken cancellationToken)
         {
-            var dataToSend = new ConcurrentQueue<string>();
-            var newData = new AutoResetEvent(false);
-            var statusUpdater = new Action<string>(state =>
-            {
-                dataToSend.Enqueue(state);
-                newData.Set();
-            });
+            var dataToSend = new BufferBlock<string>();
+            var statusUpdater = new Action<string>(state => dataToSend.Post(state));
             try
             {
                 player.GameStateUpdated += statusUpdater;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    string data;
-                    while (dataToSend.TryDequeue(out data))
-                    {
-                        await writer.WriteLineAsync(data, cancellationToken);
-                    }
-                    WaitHandle.WaitAny(new[] {newData, cancellationToken.WaitHandle});
+                    var data = await dataToSend.ReceiveAsync(cancellationToken);
+                    await writer.WriteLineAsync(data, cancellationToken);
                 }
             }
             finally
