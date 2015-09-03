@@ -66,7 +66,7 @@ namespace SnakeWars.ContestRunner
             }
             finally
             {
-                tcpClient.Dispose();
+                tcpClient.Close();
             }
         }
 
