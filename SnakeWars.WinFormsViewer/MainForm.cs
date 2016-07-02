@@ -23,7 +23,14 @@ namespace SnakeWars.WinFormsViewer
 
         public void ExceptionDetected(Exception exception)
         {
-            BeginInvoke(new Action(() => { tbStatus.Text = exception.Message; }));
+            try
+            {
+                BeginInvoke(new Action(() => { tbStatus.Text = exception.Message; }));
+            }
+            catch (InvalidOperationException)
+            {
+                // Ignore error when control is not created yet
+            }
         }
 
         public void UpdateState(TournamentStateDTO state)
