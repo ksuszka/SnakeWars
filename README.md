@@ -1,2 +1,2 @@
 # SnakeWars
-Engine for running snake bots tournament.
+An engine for running a tournament for bots playing *SnakeWars* game.
